@@ -538,7 +538,124 @@ void combat(Team * attacker, Team * defender) {
 	// Troop Types Have Shared Stats
 	// Tier Level Differences Provide No Hidden Stat Modifications
 
-	// Round 1
+	// Rounds
+	bool combatEnded = false;
+
+	unsigned int mountedRange = 50;
+	unsigned int groundRange = 50;
+	unsigned int rangedRange = 500;
+	unsigned int siegeRange = 1400;
+
+	unsigned int attackerDistMounted = 600;
+	unsigned int attackerDistGround = 350;
+	unsigned int attackerDistRanged = 100;
+	unsigned int attackerDistSiege = 75;
+
+	unsigned int defenderDistMounted = 900;
+	unsigned int defenderDistGround = 1150;
+	unsigned int defenderDistRanged = 1400;
+	unsigned int defenderDistSiege = 1425;
+
+	while (!combatEnded) {
+		
+		// Siege Attack Mounted -------------------------------------------------------------------------
+
+		unsigned int incomingDamage = attackerTroopStats[3][0];
+
+		unsigned int soakableDefense[4];
+		soakableDefense[0] = defenderTroopStats[0][1];
+		soakableDefense[1] = defenderTroopStats[1][1];
+		soakableDefense[2] = defenderTroopStats[2][1];
+		soakableDefense[3] = defenderTroopStats[3][1];
+
+		unsigned int soakableHP[4];
+		soakableHP[0] = defenderTroopStats[0][2];
+		soakableHP[1] = defenderTroopStats[1][2];
+		soakableHP[2] = defenderTroopStats[2][2];
+		soakableHP[3] = defenderTroopStats[3][2];
+
+		unsigned int soakableVitality[4];
+		soakableVitality[0] = soakableDefense[0] + soakableHP[0];
+		soakableVitality[1] = soakableDefense[1] + soakableHP[1];
+		soakableVitality[2] = soakableDefense[2] + soakableHP[2];
+		soakableVitality[3] = soakableDefense[3] + soakableHP[3];
+
+		bool troopInjured[4] = { false; }
+		bool troopDead[4] = { false; }
+
+		if (incomingDamage >= soakableDefense[0]) {
+			
+			troopInjured[0] = true;
+			incomingDamage -= soakableDefense[0];
+			defenderTroopStats[0][1] = 0;
+
+			if (incomingDamage >= sokableHP[0]) {
+
+				troopInjured[0] = true;
+				incomingDamage -= soakableDefense[0];
+				defenderTroopStats[0][1] = 0;
+			}
+		}
+
+		else {
+
+			soakableDefense[0] -= incomingDamage;
+			defenderTroopStats[0][1] -= incomingDamage;
+			incomingDamage = 0;
+
+		}
+
+		// If Mounted Will Soak The Full Hit
+		if (attackerTroopStats[3][0] <= defenderTroopStats[0][1] + defenderTroopStats[0][2]) {
+
+			// If Their Defense Will Soak The Full Hit
+			if (attackerTroopStats[3][0] <= defenderTroopStats[0][1]) {
+
+				// Deal The Damage
+				defenderTroopStats[0][1] -= attackerTroopStats[3][0];
+			}
+
+			// If Defense Will Be Broken
+			else {
+
+				// Also Damage Their HP
+				unsigned int tempAttack = attackerTroopStats[3][0];
+				tempAttack -= defenderTroopStats[0][1];
+				defenderTroopStats[0][1] = 0;
+				defenderTroopStats[0][2] -= tempAttack;
+			}
+		}
+
+		// If Mounted Won't Soak The Full Hit From Siege
+		else {
+
+			// They Die And Remaining Damage Is Subtracted Accordingly
+			unsigned int remainderAttack = attackerTroopStats[3][0];
+			remainderAttack -= defenderTroopStats[0][1];
+			remainderAttack -= defenderTroopStats[0][2];
+			defenderTroopStats[0][1] = 0;
+			defenderTroopStats[0][2] = 0;
+
+			// Then See If The Ground Can Soak The Remainder
+			if (remainderAttack <= defenderTroopStats[1][1] + defenderTroopStats[0][2]) {
+
+				// And If Their Defense Will Soak The Hit
+				if (remainderAttack <= defenderTroopStats[0][1]) {
+
+					// The Damage Gets Dealt
+					defenderTroopStats[0][1] -= remainderAttack;
+					remainderAttack -= defenderTroopStats[0][1];
+				}
+
+				// If Defense Will Be Broken
+				else {
+
+					// Also Damage Their HP
+					remainderAttack -= defenderTroopStats[0][1];
+					defenderTroopStats[0][1] = 0;
+					defenderTroopStats[0][2] -= tempAttack;
+				}
+			}
 
 	// Siege Vs Mounted > Ground > Ranged > Siege
 	unsigned int defenderVitality[4];
@@ -550,7 +667,13 @@ void combat(Team * attacker, Team * defender) {
 	unsigned int defenderVitalityTotal = defenderVitality[0];
 	bool defenderTypeDies[4] = { false; }
 
-	// If All The Mounted Will Die
+	
+
+	}
+}
+
+/*
+// If All The Mounted Will Die
 	if (attackerAttack > defenderVitalityTotal) {
 
 		// Attack Ground Troops Next
@@ -621,5 +744,4 @@ void combat(Team * attacker, Team * defender) {
 
 	}
 
-	}
-}
+*/
