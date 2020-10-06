@@ -24,13 +24,15 @@ enum FORT_TYPE {
 	ARROW
 };
 
+enum ROLE {
+
+	DEFENDER,
+	ATTACKER
+};
+
 struct Team {
 
-		enum ROLE {
 
-			DEFENDER,
-			ATTACKER
-		};
 
 		uint32_t troopCount[MAX_TROOP_TYPES][MAX_TIER_TYPES];
 		uint32_t buffFlat[MAX_TROOP_TYPES][3];
@@ -93,9 +95,19 @@ void setTroopBuffPercent(Team* team, TROOP_TYPE type, float buffAttack, float bu
 void setTroopBuffFlat(Team* team, TROOP_TYPE type, unsigned int buffAttack, unsigned int buffDefense, unsigned int buffHP);
 void combat(Team* attacker, Team* defender);
 
+unsigned int troopStats[MAX_TROOP_TYPES][MAX_TIER_TYPES][3];
+
+// Attacker Stats
+unsigned int attackerTroopStats[MAX_TROOP_TYPES][3] = { 0 };  //48 bytes
+//memset(attackerTroopStats, 0, sizeof(attackerTroopStats));
+
+// Defender Stats
+unsigned int defenderTroopStats[MAX_TROOP_TYPES][3] = { 0 };  //48 bytes
+//memset(defenderTroopStats, 0, sizeof(defenderTroopStats));
+
 int main() {
 
-	unsigned int troopStats[MAX_TROOP_TYPES][MAX_TIER_TYPES][3];
+	
 
 	Battlefield battlefield = {};
 	//Grab data from battlefield.txt...  (Or stick to hard coded data)
@@ -469,62 +481,101 @@ void setTroopBuffFlat(Team* team, TROOP_TYPE type, unsigned int buffAttack, unsi
 	team->buffFlat[type][2] = buffHP;
 }
 
+// Returns Troop Type Combined Attack For Attacker / Defender
+unsigned int getAttack(ROLE inRole, TROOP_TYPE inType) {
+
+	if (inRole = ATTACKER) {
+		
+		return attackerTroopStats[int(inType)][0];
+	}
+
+	else if (inRole = DEFENDER) {
+
+		return defenderTroopStats[int(inType)][0];
+	}
+}
+
+// Returns Troop Type Combined Defense For Attacker / Defender
+unsigned int getDefense(ROLE inRole, TROOP_TYPE inType) {
+
+	if (inRole = ATTACKER) {
+		
+		return attackerTroopStats[int(inType)][1];
+	}
+
+	else if (inRole = DEFENDER) {
+
+		return defenderTroopStats[int(inType)][1];
+	}
+}
+
+// Returns Troop Type Combined HP For Attacker / Defender
+unsigned int getHP(ROLE inRole, TROOP_TYPE inType) {
+
+	if (inRole = ATTACKER) {
+		
+		return attackerTroopStats[int(inType)][2];
+	}
+
+	else if (inRole = DEFENDER) {
+
+		return defenderTroopStats[int(inType)][2];
+	}
+}
+
 void combat(Team * attacker, Team * defender) {
 
 	// Attacker Stats
-	unsigned int attackerTroopStats[MAX_TROOP_TYPES][3] = { 0 };  //48 bytes
-	//memset(attackerTroopStats, 0, sizeof(attackerTroopStats));
 	for (unsigned int i = 1; i < 15; i++) {
 
 		// MOUNTED ----------------------------------------------------------------------------------------------------------
 		unsigned int troopCount = attacker->troopCount[0][i];
-		attackerTroopStats[0][0] += troopCount * TroopStats[0][i][0] * attacker->buffPercent[0][0]; // Attack
+		attackerTroopStats[0][0] += troopCount * troopStats[0][i][0] * attacker->buffPercent[0][0]; // Attack
 		attackerTroopStats[0][1] += troopCount * troopStats[0][i][1] * attacker->buffPercent[0][1]; // Defense
 		attackerTroopStats[0][2] += troopCount * troopStats[0][i][2] * attacker->buffPercent[0][2]; // HP
 
 		// GROUND -----------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = attacker->troopCount[1][i];
+		troopCount = attacker->troopCount[1][i];
 		attackerTroopStats[1][0] += troopCount * troopStats[1][i][0] * attacker->buffPercent[1][0]; // Attack
 		attackerTroopStats[1][1] += troopCount * troopStats[1][i][1] * attacker->buffPercent[1][1]; // Defense
 		attackerTroopStats[1][2] += troopCount * troopStats[1][i][2] * attacker->buffPercent[1][2]; // HP
 
 		// RANGED -----------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = attacker->troopCount[2][i];
+		troopCount = attacker->troopCount[2][i];
 		attackerTroopStats[2][0] += troopCount * troopStats[2][i][0] * attacker->buffPercent[2][0]; // Attack
 		attackerTroopStats[2][1] += troopCount * troopStats[2][i][1] * attacker->buffPercent[2][1]; // Defense
 		attackerTroopStats[2][2] += troopCount * troopStats[2][i][2] * attacker->buffPercent[2][2]; // HP
 
 		// SIEGE ------------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = attacker->troopCount[3][i];
+		troopCount = attacker->troopCount[3][i];
 		attackerTroopStats[3][0] += troopCount * troopStats[3][i][0] * attacker->buffPercent[3][0]; // Attack
 		attackerTroopStats[3][1] += troopCount * troopStats[3][i][1] * attacker->buffPercent[3][1]; // Defense
 		attackerTroopStats[3][2] += troopCount * troopStats[3][i][2] * attacker->buffPercent[3][2]; // HP
 
+
 	// Defender Stats
-	unsigned int defenderTroopStats[MAX_TROOP_TYPES][3];  //48 bytes
-	memset(defenderTroopStats, 0, sizeof(defenderTroopStats));
 	for (unsigned int i = 1; i < 15; i++) {
 
 		// MOUNTED ----------------------------------------------------------------------------------------------------------
 		unsigned int troopCount = defender->troopCount[0][i];
-		defenderTroopStats[0][0] += troopCount * TroopStats[0][i][0] * defender->buffPercent[0][0]; // Attack
+		defenderTroopStats[0][0] += troopCount * troopStats[0][i][0] * defender->buffPercent[0][0]; // Attack
 		defenderTroopStats[0][1] += troopCount * troopStats[0][i][1] * defender->buffPercent[0][1]; // Defense
 		defenderTroopStats[0][2] += troopCount * troopStats[0][i][2] * defender->buffPercent[0][2]; // HP
 
 		// GROUND -----------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = defender->troopCount[1][i];
+		troopCount = defender->troopCount[1][i];
 		defenderTroopStats[1][0] += troopCount * troopStats[1][i][0] * defender->buffPercent[1][0]; // Attack
 		defenderTroopStats[1][1] += troopCount * troopStats[1][i][1] * defender->buffPercent[1][1]; // Defense
 		defenderTroopStats[1][2] += troopCount * troopStats[1][i][2] * defender->buffPercent[1][2]; // HP
 
 		// RANGED -----------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = defender->troopCount[2][i];
+		troopCount = defender->troopCount[2][i];
 		defenderTroopStats[2][0] += troopCount * troopStats[2][i][0] * defender->buffPercent[2][0]; // Attack
 		defenderTroopStats[2][1] += troopCount * troopStats[2][i][1] * defender->buffPercent[2][1]; // Defense
 		defenderTroopStats[2][2] += troopCount * troopStats[2][i][2] * defender->buffPercent[2][2]; // HP
 
 		// SIEGE ------------------------------------------------------------------------------------------------------------
-		unsigned int troopCount = defender->troopCount[3][i];
+		troopCount = defender->troopCount[3][i];
 		defenderTroopStats[3][0] += troopCount * troopStats[3][i][0] * defender->buffPercent[3][0]; // Attack
 		defenderTroopStats[3][1] += troopCount * troopStats[3][i][1] * defender->buffPercent[3][1]; // Defense
 		defenderTroopStats[3][2] += troopCount * troopStats[3][i][2] * defender->buffPercent[3][2]; // HP
@@ -556,192 +607,908 @@ void combat(Team * attacker, Team * defender) {
 	unsigned int defenderDistRanged = 1400;
 	unsigned int defenderDistSiege = 1425;
 
+	unsigned int incomingDamage = 0;
+
+	// Attackers Stats
+	unsigned int attackerEndingRangedDefense;
+	unsigned int attackerEndingRangedHP;
+	unsigned int attackerEndingRangedAttack;
+	unsigned int attackerEndingSiegeDefense;
+	unsigned int attackerEndingSiegeHP;
+	unsigned int attackerEndingSiegeAttack;
+	unsigned int attackerEndingGroundDefense;
+	unsigned int attackerEndingGroundHP;
+	unsigned int attackerEndingGroundAttack;
+	unsigned int attackerEndingMountedDefense;
+	unsigned int attackerEndingMountedHP;
+	unsigned int attackerEndingMountedAttack;
+
+	// Defenders Stats
+	unsigned int defenderEndingRangedDefense;
+	unsigned int defenderEndingRangedHP;
+	unsigned int defenderEndingRangedAttack;
+	unsigned int defenderEndingSiegeDefense;
+	unsigned int defenderEndingSiegeHP;
+	unsigned int defenderEndingSiegeAttack;
+	unsigned int defenderEndingGroundDefense;
+	unsigned int defenderEndingGroundHP;
+	unsigned int defenderEndingGroundAttack;
+	unsigned int defenderEndingMountedDefense;
+	unsigned int defenderEndingMountedHP;
+	unsigned int defenderEndingMountedAttack;
+
 	while (!combatEnded) {
-		
-		// Siege Attack Mounted -------------------------------------------------------------------------
 
-		unsigned int incomingDamage = attackerTroopStats[3][0];
+		// Attackers Ending Stats -----------------------------------------------------------------------
 
-		unsigned int soakableDefense[4];
-		soakableDefense[0] = defenderTroopStats[0][1];
-		soakableDefense[1] = defenderTroopStats[1][1];
-		soakableDefense[2] = defenderTroopStats[2][1];
-		soakableDefense[3] = defenderTroopStats[3][1];
+		// Ranged
+		attackerEndingRangedDefense = getDefense(ATTACKER, RANGED);
+		attackerEndingRangedHP = getHP(ATTACKER, RANGED);
+		attackerEndingRangedAttack = getAttack(ATTACKER, RANGED);
 
-		unsigned int soakableHP[4];
-		soakableHP[0] = defenderTroopStats[0][2];
-		soakableHP[1] = defenderTroopStats[1][2];
-		soakableHP[2] = defenderTroopStats[2][2];
-		soakableHP[3] = defenderTroopStats[3][2];
+		// Siege
+		attackerEndingSiegeDefense = getDefense(ATTACKER, SIEGE);
+		attackerEndingSiegeHP = getHP(ATTACKER, SIEGE);
+		attackerEndingSiegeAttack = getAttack(ATTACKER, SIEGE);
 
-		unsigned int soakableVitality[4];
-		soakableVitality[0] = soakableDefense[0] + soakableHP[0];
-		soakableVitality[1] = soakableDefense[1] + soakableHP[1];
-		soakableVitality[2] = soakableDefense[2] + soakableHP[2];
-		soakableVitality[3] = soakableDefense[3] + soakableHP[3];
+		// Ground
+		attackerEndingGroundDefense = getDefense(ATTACKER, GROUND);
+		attackerEndingGroundHP = getHP(ATTACKER, GROUND);
+		attackerEndingGroundAttack = getAttack(ATTACKER, GROUND);
 
-		bool troopInjured[4] = { false; }
-		bool troopDead[4] = { false; }
+		// Mounted
+		attackerEndingMountedDefense = getDefense(ATTACKER, MOUNTED);
+		attackerEndingMountedHP = getHP(ATTACKER, MOUNTED);
+		attackerEndingMountedAttack = getAttack(ATTACKER, MOUNTED);
 
-		if (incomingDamage >= soakableDefense[0]) {
-			
-			troopInjured[0] = true;
-			incomingDamage -= soakableDefense[0];
-			defenderTroopStats[0][1] = 0;
+		// Defenders Ending Stats -----------------------------------------------------------------------
 
-			if (incomingDamage >= sokableHP[0]) {
+		// Ranged
+		defenderEndingRangedDefense = getDefense(DEFENDER, RANGED);
+		defenderEndingRangedHP = getHP(DEFENDER, RANGED);
+		defenderEndingAttack = getAttack(DEFENDER, RANGED);
 
-				troopInjured[0] = true;
-				incomingDamage -= soakableDefense[0];
-				defenderTroopStats[0][1] = 0;
-			}
-		}
+		// Siege
+		defenderEndingSiegeDefense = getDefense(DEFENDER, SIEGE);
+		defenderEndingSiegeHP = getHP(DEFENDER, SIEGE);
+		defenderEndingAttack = getAttack(DEFENDER, SIEGE);
 
-		else {
+		// Ground
+		defenderEndingGroundDefense = getDefense(DEFENDER, GROUND);
+		defenderEndingGroundHP = getHP(DEFENDER, GROUND);
+		defenderEndingGroundAttack = getAttack(DEFENDER, GROUND);
 
-			soakableDefense[0] -= incomingDamage;
-			defenderTroopStats[0][1] -= incomingDamage;
-			incomingDamage = 0;
+		// Mounted
+		defenderEndingMountedDefense = getDefense(DEFENDER, MOUNTED);
+		defenderEndingMountedHP = getHP(DEFENDER, MOUNTED);
+		defenderEndingAttack = getAttack(DEFENDER, MOUNTED);
 
-		}
+		// Siege Attack ---------------------------------------------------------------------------------
 
-		// If Mounted Will Soak The Full Hit
-		if (attackerTroopStats[3][0] <= defenderTroopStats[0][1] + defenderTroopStats[0][2]) {
+		if (attackerCooldownSiege < 1) {
+			incomingDamage = getAttack(ATTACKER, SIEGE);
 
-			// If Their Defense Will Soak The Full Hit
-			if (attackerTroopStats[3][0] <= defenderTroopStats[0][1]) {
-
-				// Deal The Damage
-				defenderTroopStats[0][1] -= attackerTroopStats[3][0];
-			}
-
-			// If Defense Will Be Broken
-			else {
-
-				// Also Damage Their HP
-				unsigned int tempAttack = attackerTroopStats[3][0];
-				tempAttack -= defenderTroopStats[0][1];
-				defenderTroopStats[0][1] = 0;
-				defenderTroopStats[0][2] -= tempAttack;
-			}
-		}
-
-		// If Mounted Won't Soak The Full Hit From Siege
-		else {
-
-			// They Die And Remaining Damage Is Subtracted Accordingly
-			unsigned int remainderAttack = attackerTroopStats[3][0];
-			remainderAttack -= defenderTroopStats[0][1];
-			remainderAttack -= defenderTroopStats[0][2];
-			defenderTroopStats[0][1] = 0;
-			defenderTroopStats[0][2] = 0;
-
-			// Then See If The Ground Can Soak The Remainder
-			if (remainderAttack <= defenderTroopStats[1][1] + defenderTroopStats[0][2]) {
-
-				// And If Their Defense Will Soak The Hit
-				if (remainderAttack <= defenderTroopStats[0][1]) {
-
-					// The Damage Gets Dealt
-					defenderTroopStats[0][1] -= remainderAttack;
-					remainderAttack -= defenderTroopStats[0][1];
+			// If Defending Ranged Are In Range Of Attacking Siege
+			if (attackerDistSiege < defenderDistRanged) {
+				attackerCooldownSiege = 3;
+				if (defenderEndingRangedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingRangedDefense;
+					defenderEndingRangedDefense = 0;
 				}
-
-				// If Defense Will Be Broken
 				else {
 
-					// Also Damage Their HP
-					remainderAttack -= defenderTroopStats[0][1];
-					defenderTroopStats[0][1] = 0;
-					defenderTroopStats[0][2] -= tempAttack;
+					defenderEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingRangedHP < incomingDamage) {
+					incomingDamage -= defenderEndingRangedHP;
+					defenderEndingRangedHP = 0;
+					defenderDistRanged = -10000;
+				}
+				else {
+					defenderEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
 				}
 			}
 
-	// Siege Vs Mounted > Ground > Ranged > Siege
-	unsigned int defenderVitality[4];
-	defenderVitality[0] = defenderTroopStats[0][1] + defenderTroopStats[0][2];
-	defenderVitality[1] = defenderTroopStats[1][1] + defenderTroopStats[1][2];
-	defenderVitality[2] = defenderTroopStats[2][1] + defenderTroopStats[2][2];
-	defenderVitality[3] = defenderTroopStats[3][1] + defenderTroopStats[3][2];
+			// If Defending Siege Are In Range Of Attacking Siege
+			if (attackerDistSiege < defenderDistSiege) {
+				attackerCooldownSiege = 3;
+				if (defenderEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeDefense;
+					defenderEndingSiegeDefense = 0;
+				}
+				else {
 
-	unsigned int defenderVitalityTotal = defenderVitality[0];
-	bool defenderTypeDies[4] = { false; }
+					defenderEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
 
-	
+				if (defenderEndingSiegeHP < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeHP;
+					defenderEndingSiegeHP = 0;
+					defenderDistSiege = -10000;
+				}
+				else {
+					defenderEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
 
-	}
-}
+			// If Defending Mounted Are In Range Of Attacking Siege
+			if (attackerDistSiege < defenderDistMounted) {
+				attackerCooldownSiege = 3;
+				if (defenderEndingMountedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingMountedDefense;
+					defenderEndingMountedDefense = 0;
+				}
+				else {
 
-/*
-// If All The Mounted Will Die
-	if (attackerAttack > defenderVitalityTotal) {
+					defenderEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
 
-		// Attack Ground Troops Next
-		defenderVitalityTotal += defenderVitality[1];
-		defenderTypeDies[0] = true;
+				if (defenderEndingMountedHP < incomingDamage) {
+					incomingDamage -= defenderEndingMountedHP;
+					defenderEndingMountedHP = 0;
+					defenderDistMounted = -10000;
+				}
+				else {
+					defenderEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
 
-		// If All The Ground Troops Will Die
-		if (attackerAttack > defenderVitalityTotal) {
+			// If Defending Ground Are In Range Of Attacking Siege
+			if (attackerDistSiege < defenderDistGround) {
+				attackerCooldownSiege = 3;
+				if (defenderEndingGroundDefense < incomingDamage) {
+					incomingDamage -= defenderEndingGroundDefense;
+					defenderEndingGroundDefense = 0;
+				}
+				else {
 
-			// Attack Range Troops Next
-			defenderVitalityTotal += defenderVitality[2];
-			defenderTypeDies[1];
+					defenderEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
 
-			// If All The Ranged Troops Will Die
-			if (attackerAttack > defenderVitalityTotal) {
-
-				// Attack Siege Next
-				defenderVitalityTotal += defenderVitality[3];
-				defenderTypeDies[2];
-
+				if (defenderEndingGroundHP < incomingDamage) {
+					incomingDamage -= defenderEndingGroundHP;
+					defenderEndingGroundHP = 0;
+					defenderDistGround = -10000;
+				}
+				else {
+					defenderEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
 			}
 		}
-	}
+
+		// Ranged Attack ----------------------------------------------------------------------------------------------------
+
+		if (attackerCooldownRanged < 1) {
+			incomingDamage = getAttack(ATTACKER, RANGED);
+
+			// If Defending Mounted Are In Range Of Attacking Ranged
+			if (attackerDistRanged < defenderDistMounted && (defenderDistMounted - attackerDistRanged) <= 500) {
+				attackerCooldownRanged = 4;
+				if (defenderEndingMountedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingMountedDefense;
+					defenderEndingMountedDefense = 0;
+				}
+				else {
+
+					defenderEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingMountedHP < incomingDamage) {
+					incomingDamage -= defenderEndingMountedHP;
+					defenderEndingMountedHP = 0;
+					defenderDistMounted = -10000;
+				}
+				else {
+					defenderEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ground Are In Range Of Attacking Ranged
+			if (attackerDistRanged < defenderDistGround && (defenderDistGround - attackerDistRanged) <= 500) {
+				attackerCooldownRanged = 4;
+				if (defenderEndingGroundDefense < incomingDamage) {
+					incomingDamage -= defenderEndingGroundDefense;
+					defenderEndingGroundDefense = 0;
+				}
+				else {
+
+					defenderEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingGroundHP < incomingDamage) {
+					incomingDamage -= defenderEndingGroundHP;
+					defenderEndingGroundHP = 0;
+					defenderDistGround = -10000;
+				}
+				else {
+					defenderEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ranged Are In Range Of Attacking Ranged
+			if (attackerDistRanged < defenderDistRanged && (defenderDistRanged - attackerDistRanged) <= 500) {
+				attackerCooldownRanged = 4;
+				if (defenderEndingRangedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingRangedDefense;
+					defenderEndingRangedDefense = 0;
+				}
+				else {
+
+					defenderEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingRangedHP < incomingDamage) {
+					incomingDamage -= defenderEndingRangedHP;
+					defenderEndingRangedHP = 0;
+					defenderDistRanged = -10000;
+				}
+				else {
+					defenderEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Siege Are In Range Of Attacking Ranged
+			if (attackerDistRanged < defenderDistSiege && (defenderDistSiege - attackerDistRanged) <= 500) {
+				attackerCooldownRanged = 4;
+				if (defenderEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeDefense;
+					defenderEndingSiegeDefense = 0;
+				}
+				else {
+
+					defenderEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingSiegeHP < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeHP;
+					defenderEndingSiegeHP = 0;
+					defenderDistSiege = -10000;
+				}
+				else {
+					defenderEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Ground Attack ----------------------------------------------------------------------------------------------------
+
+		if (attackerCooldownGround < 1) {
+			incomingDamage = getAttack(ATTACKER, GROUND);
+
+			// If Defending Mounted Are In Range Of Attacking Ground
+			if (attackerDistGround < defenderDistMounted && (defenderDistMounted - attackerDistGround) <= 50) {
+				attackerCooldownGround = 14;
+				if (defenderEndingMountedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingMountedDefense;
+					defenderEndingMountedDefense = 0;
+				}
+				else {
+
+					defenderEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingMountedHP < incomingDamage) {
+					incomingDamage -= defenderEndingMountedHP;
+					defenderEndingMountedHP = 0;
+					defenderDistMounted = -10000;
+				}
+				else {
+					defenderEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ground Are In Range Of Attacking Ground
+			if (attackerDistGround < defenderDistGround && (defenderDistGround - attackerDistGround) <= 50) {
+				attackerCooldownGround = 14;
+				if (defenderEndingGroundDefense < incomingDamage) {
+					incomingDamage -= defenderEndingGroundDefense;
+					defenderEndingGroundDefense = 0;
+				}
+				else {
+
+					defenderEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingGroundHP < incomingDamage) {
+					incomingDamage -= defenderEndingGroundHP;
+					defenderEndingGroundHP = 0;
+					defenderDistGround = -10000; 
+				}
+				else {
+					defenderEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ranged Are In Range Of Attacking Ground
+			if (attackerDistGround < defenderDistRanged && (defenderDistRanged - attackerDistGround) <= 50) {
+				attackerCooldownGround = 14;
+				if (defenderEndingRangedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingRangedDefense;
+					defenderEndingRangedDefense = 0;
+				}
+				else {
+
+					defenderEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingRangedHP < incomingDamage) {
+					incomingDamage -= defenderEndingRangedHP;
+					defenderEndingRangedHP = 0;
+					defenderDistRanged = -10000;
+				}
+				else {
+					defenderEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Siege Are In Range Of Attacking Ground
+			if (attackerDistGround < defenderDistSiege && (defenderDistSiege - attackerDistGround) <= 50) {
+				attackerCooldownGround = 14;
+				if (defenderEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeDefense;
+					defenderEndingSiegeDefense = 0;
+				}
+				else {
+
+					defenderEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingSiegeHP < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeHP;
+					defenderEndingSiegeHP = 0;
+					defenderDistSiege = -10000;
+				}
+				else {
+					defenderEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Mounted Attack ---------------------------------------------------------------------------------------------------
+
+		if (attackerCooldownMounted < 1) {
+			incomingDamage = getAttack(ATTACKER, MOUNTED);
+
+			// If Defending Mounted Are In Range Of Attacking Mounted
+			if (attackerDistGround < defenderDistMounted && (defenderDistMounted - attackerDistMounted) <= 50) {
+				attackerCooldownMounted = 24;
+				if (defenderEndingMountedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingMountedDefense;
+					defenderEndingMountedDefense = 0;
+				}
+				else {
+
+					defenderEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingMountedHP < incomingDamage) {
+					incomingDamage -= defenderEndingMountedHP;
+					defenderEndingMountedHP = 0;
+					defenderDistMounted = -10000;
+				}
+				else {
+					defenderEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ground Are In Range Of Attacking Mounted
+			if (attackerDistGround < defenderDistGround && (defenderDistGround - attackerDistMounted) <= 50) {
+				attackerCooldownMounted = 24;
+				if (defenderEndingGroundDefense < incomingDamage) {
+					incomingDamage -= defenderEndingGroundDefense;
+					defenderEndingGroundDefense = 0;
+				}
+				else {
+
+					defenderEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingGroundHP < incomingDamage) {
+					incomingDamage -= defenderEndingGroundHP;
+					defenderEndingGroundHP = 0;
+				}
+				else {
+					defenderEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Ranged Are In Range Of Attacking Mounted
+			if (attackerDistGround < defenderDistRanged && (defenderDistRanged - attackerDistMounted) <= 50) {
+				attackerCooldownMounted = 24;
+				if (defenderEndingRangedDefense < incomingDamage) {
+					incomingDamage -= defenderEndingRangedDefense;
+					defenderEndingRangedDefense = 0;
+				}
+				else {
+
+					defenderEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingRangedHP < incomingDamage) {
+					incomingDamage -= defenderEndingRangedHP;
+					defenderEndingRangedHP = 0;
+				}
+				else {
+					defenderEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Defending Siege Are In Range Of Attacking Mounted
+			if (attackerDistGround < defenderDistSiege && (defenderDistSiege - attackerDistMounted) <= 50) {
+				attackerCooldownMounted = 24;
+				if (defenderEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeDefense;
+					defenderEndingSiegeDefense = 0;
+				}
+				else {
+
+					defenderEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (defenderEndingSiegeHP < incomingDamage) {
+					incomingDamage -= defenderEndingSiegeHP;
+					defenderEndingSiegeHP = 0;
+				}
+				else {
+					defenderEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Defending Troops Return Fire -------------------------------------------------------------------------------
+
+		// Siege Attack ---------------------------------------------------------------------------------
+
+		if (defenderCooldownSiege < 1) {
+			unsigned int incomingDamage = getAttack(DEFENDER, SIEGE);
+
+			// If Attacking Ranged Are In Range Of Defending Siege
+			if (defenderDistSiege > attackerDistRanged) {
+				defenderCooldownSiege = 3;
+				if (attackerEndingRangedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingRangedDefense;
+					attackerEndingRangedDefense = 0;
+				}
+				else {
+
+					attackerEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingRangedHP < incomingDamage) {
+					incomingDamage -= attackerEndingRangedHP;
+					attackerEndingRangedHP = 0;
+				}
+				else {
+					attackerEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Siege Are In Range Of Defending Siege
+			if (defenderDistSiege > attackerDistSiege) {
+				defenderCooldownSiege = 3;
+				if (attackerEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeDefense;
+					attackerEndingSiegeDefense = 0;
+				}
+				else {
+
+					attackerEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingSiegeHP < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeHP;
+					attackerEndingSiegeHP = 0;
+				}
+				else {
+					attackerEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Mounted Are In Range Of Defending Siege
+			if (defenderDistSiege > attackerDistMounted) {
+				defenderCooldownSiege = 3;
+				if (attackerEndingMountedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingMountedDefense;
+					attackerEndingMountedDefense = 0;
+				}
+				else {
+
+					attackerEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingMountedHP < incomingDamage) {
+					incomingDamage -= attackerEndingMountedHP;
+					attackerEndingMountedHP = 0;
+				}
+				else {
+					attackerEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ground Are In Range Of Defending Siege
+			if (defenderDistSiege > attackerDistGround) {
+				defenderCooldownSiege = 3;
+				if (attackerEndingGroundDefense < incomingDamage) {
+					incomingDamage -= attackerEndingGroundDefense;
+					attackerEndingGroundDefense = 0;
+				}
+				else {
+
+					attackerEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingGroundHP < incomingDamage) {
+					incomingDamage -= attackerEndingGroundHP;
+					attackerEndingGroundHP = 0;
+				}
+				else {
+					attackerEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Ranged Attack ----------------------------------------------------------------------------------------------------
+
+		if (defenderCooldownRanged < 1) {
+			incomingDamage = getAttack(DEFENDER, RANGED);
+
+			// If Attacking Mounted Are In Range Of Defending Ranged
+			if (defenderDistRanged > attackerDistMounted && (attackerDistMounted - defenderDistRanged) >= -500) {
+				defenderCooldownRanged = 4;
+				if (attackerEndingMountedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingMountedDefense;
+					attackerEndingMountedDefense = 0;
+				}
+				else {
+
+					attackerEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingMountedHP < incomingDamage) {
+					incomingDamage -= attackerEndingMountedHP;
+					attackerEndingMountedHP = 0;
+				}
+				else {
+					attackerEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ground Are In Range Of Defending Ranged
+			if (defenderDistRanged > attackerDistGround && (attackerDistGround - defenderDistRanged) >= -500) {
+				defenderCooldownRanged = 4;
+				if (attackerEndingGroundDefense < incomingDamage) {
+					incomingDamage -= attackerEndingGroundDefense;
+					attackerEndingGroundDefense = 0;
+				}
+				else {
+
+					attackerEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingGroundHP < incomingDamage) {
+					incomingDamage -= attackerEndingGroundHP;
+					attackerEndingGroundHP = 0;
+				}
+				else {
+					attackerEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ranged Are In Range Of Defending Ranged
+			if (defenderDistRanged > attackerDistRanged && (attackerDistRanged - defenderDistRanged) >= -500) {
+				defenderCooldownRanged = 4;
+				if (attackerEndingRangedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingRangedDefense;
+					attackerEndingRangedDefense = 0;
+				}
+				else {
+
+					attackerEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingRangedHP < incomingDamage) {
+					incomingDamage -= attackerEndingRangedHP;
+					attackerEndingRangedHP = 0;
+				}
+				else {
+					attackerEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Siege Are In Range Of Defending Ranged
+			if (defenderDistRanged > attackerDistSiege && (attackerDistSiege - defenderDistRanged) >= -500) {
+				defenderCooldownRanged = 4;
+				if (attackerEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeDefense;
+					attackerEndingSiegeDefense = 0;
+				}
+				else {
+
+					attackerEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingSiegeHP < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeHP;
+					attackerEndingSiegeHP = 0;
+				}
+				else {
+					attackerEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Ground Attack ----------------------------------------------------------------------------------------------------
+		if (defenderCooldownGround < 1) {
+			incomingDamage = getAttack(DEFENDER, GROUND);
+
+			// If Attacking Mounted Are In Range Of Defending Ground
+			if (defenderDistGround > attackerDistMounted && (attackerDistMounted - defenderDistGround) >= -50) {
+				defenderCooldownGround = 14;
+				if (attackerEndingMountedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingMountedDefense;
+					attackerEndingMountedDefense = 0;
+				}
+				else {
+
+					attackerEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingMountedHP < incomingDamage) {
+					incomingDamage -= attackerEndingMountedHP;
+					attackerEndingMountedHP = 0;
+				}
+				else {
+					attackerEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ground Are In Range Of Defending Ground
+			if (defenderDistGround > attackerDistGround && (attackerDistGround - defenderDistGround) >= -50) {
+				defenderCooldownGround = 14;
+				if (attackerEndingGroundDefense < incomingDamage) {
+					incomingDamage -= attackerEndingGroundDefense;
+					attackerEndingGroundDefense = 0;
+				}
+				else {
+
+					attackerEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingGroundHP < incomingDamage) {
+					incomingDamage -= attackerEndingGroundHP;
+					attackerEndingGroundHP = 0;
+				}
+				else {
+					attackerEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ranged Are In Range Of Defending Ground
+			if (defenderDistGround > attackerDistRanged && (attackerDistRanged - defenderDistGround) >= -50) {
+				defenderCooldownGround = 14;
+				if (attackerEndingRangedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingRangedDefense;
+					attackerEndingRangedDefense = 0;
+				}
+				else {
+
+					attackerEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingRangedHP < incomingDamage) {
+					incomingDamage -= attackerEndingRangedHP;
+					attackerEndingRangedHP = 0;
+				}
+				else {
+					attackerEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Siege Are In Range Of Defending Ground
+			if (defenderDistGround > attackerDistSiege && (attackerDistSiege - defenderDistGround) >= -50) {
+				defenderCooldownGround = 14;
+				if (attackerEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeDefense;
+					attackerEndingSiegeDefense = 0;
+				}
+				else {
+
+					attackerEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingSiegeHP < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeHP;
+					attackerEndingSiegeHP = 0;
+				}
+				else {
+					attackerEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Mounted Attack ---------------------------------------------------------------------------------------------------
+
+		if (defenderCooldownMounted < 1) {
+			incomingDamage = getAttack(DEFENDER, MOUNTED);
+
+			// If Attacking Mounted Are In Range Of Defending Mounted
+			if (defenderDistGround > attackerDistMounted && (attackerDistMounted - defenderDistMounted) >= -50) {
+				defenderCooldownMounted = 24;
+				if (attackerEndingMountedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingMountedDefense;
+					attackerEndingMountedDefense = 0;
+				}
+				else {
+
+					attackerEndingMountedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingMountedHP < incomingDamage) {
+					incomingDamage -= attackerEndingMountedHP;
+					attackerEndingMountedHP = 0;
+				}
+				else {
+					attackerEndingMountedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ground Are In Range Of Defending Mounted
+			if (defenderDistGround > attackerDistGround && (attackerDistGround - defenderDistMounted) >= -50) {
+				defenderCooldownMounted = 24;
+				if (attackerEndingGroundDefense < incomingDamage) {
+					incomingDamage -= attackerEndingGroundDefense;
+					attackerEndingGroundDefense = 0;
+				}
+				else {
+
+					attackerEndingGroundDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingGroundHP < incomingDamage) {
+					incomingDamage -= attackerEndingGroundHP;
+					attackerEndingGroundHP = 0;
+				}
+				else {
+					attackerEndingGroundHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Ranged Are In Range Of Defending Mounted
+			if (defenderDistGround > attackerDistRanged && (attackerDistRanged - defenderDistMounted) >= -50) {
+				defenderCooldownMounted = 24;
+				if (attackerEndingRangedDefense < incomingDamage) {
+					incomingDamage -= attackerEndingRangedDefense;
+					attackerEndingRangedDefense = 0;
+				}
+				else {
+
+					attackerEndingRangedDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingRangedHP < incomingDamage) {
+					incomingDamage -= attackerEndingRangedHP;
+					attackerEndingRangedHP = 0;
+				}
+				else {
+					attackerEndingRangedHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+
+			// If Attacking Siege Are In Range Of Defending Mounted
+			if (defenderDistGround > attackerDistSiege && (attackerDistSiege - defenderDistMounted) >= -50) {
+				defenderCooldownMounted = 24;
+				if (attackerEndingSiegeDefense < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeDefense;
+					attackerEndingSiegeDefense = 0;
+				}
+				else {
+
+					attackerEndingSiegeDefense -= incomingDamage;
+					incomingDamage = 0;
+				}
+
+				if (attackerEndingSiegeHP < incomingDamage) {
+					incomingDamage -= attackerEndingSiegeHP;
+					attackerEndingSiegeHP = 0;
+				}
+				else {
+					attackerEndingSiegeHP -= incomingDamage;
+					incomingDamage = 0;
+				}
+			}
+		}
+
+		// Troops Move
+
+		// Attacker
+		attackerDistGround += 14;
+		attackerDistMounted += 24;
+		attackerDistRanged += 4;
+		attackerDistSiege += 3;
+
+		// Defender
+		defenderDistGround += 14;
+		defenderDistMounted += 24;
+		defenderDistRanged += 4;
+		defenderDistSiege += 3;
+
+		// Cooldowns
+
+		// Attacker
+		attackerCooldownGround -= 14 / 25;
+		attackerCooldownMounted -= 24 / 25;
+		attackerCooldownRanged -= 4 / 25;
+		attackerCooldownSiege -= 3 / 25;
+
+		// Defender
+		defenderCooldownGround -= 14 / 25;
+		defenderCooldownMounted -= 24 / 25;
+		defenderCooldownRanged -= 4 / 25;
+		defenderCooldownSiege -= 3 / 25;
+
 	
-	float defenderDeathRate;
-	float attackerDeathRate; 
-
-	// If Everything Is Going To Die
-	if (attackerAttack > defenderVitalityTotal) {
-
-		defenderTypeDies[3] = true;
-		defenderDeathRate = 1.00; // 100% Death
 	}
-
-	else {
-
-		if (defenderTypeDies[0]) {
-
-			memset(&defenderTroopStats[0][0], 0, sizeof(uint32_t) * 3);  //Maybe slightly less efficient though is a one liner, harder to read maybe?
-			defenderTroopStats[0][0] = 0;
-			defenderTroopStats[0][1] = 0;
-			defenderTroopStats[0][2] = 0;
-		}
-
-		if (defenderTypeDies[1]) {
-
-			defenderTroopStats[1][0] = 0;
-			defenderTroopStats[1][1] = 0;
-			defenderTroopStats[1][2] = 0;
-
-		}
-
-		if (defenderTypeDies[2]) {
-
-			defenderTroopStats[2][0] = 0;
-			defenderTroopStats[2][1] = 0;
-			defenderTroopStats[2][2] = 0;
-		}
-
-		if (defenderTypeDies[3]) {
-
-			defenderTroopStats[3][0] = 0;
-			defenderTroopStats[3][1] = 0;
-			defenderTroopStats[3][2] = 0;
-		}
-	}
-
-
-	}
-
-*/
+}
